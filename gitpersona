@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+PYTHON_SCRIPT="GITPERSONA_PATH/main.py"
+
+# Check if the repository URL is provided
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <repository-url>"
+    exit 1
+fi
+
+# Call your Python script with the 'clone' command and pass the repository URL
+python3 "$PYTHON_SCRIPT" clone "$1"

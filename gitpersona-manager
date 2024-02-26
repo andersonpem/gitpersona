@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+PYTHON_SCRIPT="$GITPERSONA_PATH/main.py"
+
+# Check if any argument is provided
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <command> [<args>]"
+    echo "Commands:"
+    echo "  add <name> <email>      Add a new identity"
+    echo "  remove <name>           Remove an existing identity"
+    echo "  list                    List all identities"
+    echo "  clone <repository-url>  Clone a repository"
+    echo "  edit                    Edit an existing identity"
+    echo "  switch                  Switches the identity used in the repository in the current directory"
+    exit 1
+fi
+
+# Parse the command
+command=$1
+shift
+
+# Call the appropriate function based on the command
+case "$command" in
+    add)
+        if [ "$#" -ne 2 ]; then
+            echo "Usage: $0 add <name> <email>"
+            exit 1
+        fi
+        python3 "$PYTHON_SCRIPT" add "$1" "$2"
+        ;;
+    remove)
+        if [ "$#" -ne 1 ]; then
+            echo "Usage: $0 remove <name>"
+            exit 1
+        fi
+        python3 "$PYTHON_SCRIPT" remove "$1"
+        ;;
+    edit)
+      python3 "$PYTHON_SCRIPT" edit
+      ;;
+    list)
+        python3 "$PYTHON_SCRIPT" list
+        ;;
+    clone)
+        if [ "$#" -ne 1 ]; then
+            echo "Usage: $0 clone <repository-url>"
+            exit 1
+        fi
+        python3 "$PYTHON_SCRIPT" clone "$1"
+        ;;
+    switch)
+        python3 "$PYTHON_SCRIPT" switch .
+        ;;
+    *)
+        echo "Unknown command: $command"
+        echo "Usage: $0 <command> [<args>]"
+        exit 1
+        ;;
+esac

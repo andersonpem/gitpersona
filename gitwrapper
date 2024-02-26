@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+export GITPERSONA_PATH="$HOME/.gitpersona"
+export PATH="$GITPERSONA_PATH:$PATH"
+
+git_wrapper() {
+    if [[ $1 == "clone" ]]; then
+        # Shift the 'clone' argument off the argument list
+        shift
+        # Call your wrapper script with the remaining arguments
+        "$GITPERSONA_PATH/main.py" "$@"
+    else
+        # For all other commands, just call git normally
+        /usr/bin/env git "$@"
+    fi
+}
+
+alias git="git_wrapper"
