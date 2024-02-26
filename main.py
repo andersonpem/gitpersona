@@ -67,9 +67,9 @@ def edit_identity(args):
     identity_completer = WordCompleter(list(identities.keys()))
     identity = prompt("Choose an identity to edit [You can use tab to autocomplete]: ", completer=identity_completer)
 
-    while identity not in [name for name, email in identities.keys().split(": ")]:
+    while identity not in identities.keys():
         print("Invalid identity. Please try again.")
-        identity = prompt("Choose an identity to edit: ", completer=identity_completer)
+    identity = prompt("Choose an identity: ", completer=identity_completer)
 
     old_name, old_email = identity.split(": ")
     edit_choice = input("Do you want to edit the name, email, or both? (Enter 'name', 'email', or 'both'): ")
@@ -104,7 +104,7 @@ def clone_repository(args):
     print("Cloning repo, but first...")
     identity = prompt("Choose an identity for commits [you can use tab to autocomplete]: ", completer=identity_completer)
 
-    while identity not in [name for name, email in identities.keys().split(": ")]:
+    while identity not in identities.keys():
         print("Invalid identity. Please try again.")
         identity = prompt("Choose an identity: ", completer=identity_completer)
 
@@ -117,7 +117,10 @@ def clone_repository(args):
         git_config.set_value("user", "email", email)
     print(f"Repository '{repo_name}' cloned with identity '{name}'.")
 
-    # Change the current working directory to the repository's folder
+    if not os.path.exists(repo_name):
+        print(f"Directory '{repo_name}' does not exist. Please check the repository cloning process.")
+        return
+
     os.chdir(repo_name)
 
 
@@ -131,7 +134,7 @@ def switch_identity(args):
         print("Switching identity in the current project.")
         identity = prompt("Choose an identity [you can use tab to autocomplete]: ", completer=identity_completer)
 
-        while identity not in [name.split(": ")[0] for name in identities.keys()]:
+        while identity not in identities.keys():
             print("Invalid identity. Please try again.")
             identity = prompt("Choose an identity: ", completer=identity_completer)
 
