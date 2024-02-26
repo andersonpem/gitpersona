@@ -101,7 +101,8 @@ def list_identities(args):
 def clone_repository(args):
     identities = load_identities()
     identity_completer = WordCompleter(list(identities.keys()))
-    identity = prompt("Choose an identity: ", completer=identity_completer)
+    print("Cloning repo, but first...")
+    identity = prompt("Choose an identity for commits [you can use tab to autocomplete]: ", completer=identity_completer)
 
     while identity not in [name for name, email in identities.keys().split(": ")]:
         print("Invalid identity. Please try again.")
