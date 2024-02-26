@@ -36,7 +36,7 @@ To install them run:
 Clone this repo:
 
 ```bash
-git clone git@github.com:andersonpem/gitpersona.git $HOME/.gitpersona
+git clone https://github.com/andersonpem/gitpersona.git $HOME/.gitpersona
 ```
 
 Run this to add it to your path and have a git wrapper:
