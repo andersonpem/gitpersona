@@ -8,11 +8,13 @@ git_wrapper() {
         # Shift the 'clone' argument off the argument list
         shift
         # Call your wrapper script with the remaining arguments
-        "$GITPERSONA_PATH/main.py" "$@"
+        "$GITPERSONA_PATH/main.py" clone "$@"
     else
         # For all other commands, just call git normally
         /usr/bin/env git "$@"
     fi
 }
 
-alias git="git_wrapper"
+git() {
+    git_wrapper "$@"
+}

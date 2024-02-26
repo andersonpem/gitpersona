@@ -43,10 +43,10 @@ case "$command" in
         ;;
     clone)
         if [ "$#" -ne 1 ]; then
-            echo "Usage: $0 clone <repository-url>"
+            echo "Usage: $0 clone <repository-url> <directory: optional>"
             exit 1
         fi
-        python3 "$PYTHON_SCRIPT" clone "$1"
+        python3 "$PYTHON_SCRIPT" clone "$@"
         ;;
     switch)
         python3 "$PYTHON_SCRIPT" switch .

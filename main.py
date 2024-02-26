@@ -102,13 +102,16 @@ def clone_repository(args):
         identity = prompt("Choose an identity: ", completer=identity_completer)
 
     name, email = identity.split(": ")
-    repo_name = args.url.split('/')[-1].replace('.git', '')
+    repo_name = args.directory or args.url.split('/')[-1].replace('.git', '')
     Repo.clone_from(args.url, repo_name)
     repo = Repo(repo_name)
     with repo.config_writer() as git_config:
         git_config.set_value("user", "name", name)
         git_config.set_value("user", "email", email)
     print(f"Repository '{repo_name}' cloned with identity '{name}'.")
+
+    # Change the current working directory to the repository's folder
+    os.chdir(repo_name)
 
 
 def switch_identity(args):
@@ -155,8 +158,8 @@ def main():
     # Clone repository command
     parser_clone = subparsers.add_parser('clone', help='Clone a repository with a specified identity')
     parser_clone.add_argument('url', help='Repository URL')
+    parser_clone.add_argument('directory', nargs='?', default=None, help='Directory to clone the repository into')
     parser_clone.set_defaults(func=clone_repository)
-
     # Switch identity command
     parser_switch = subparsers.add_parser('switch', help='Switch identity in an existing project')
     parser_switch.add_argument('repo_path', help='Path to the Git repository')
