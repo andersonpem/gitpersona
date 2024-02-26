@@ -42,27 +42,32 @@ def save_identities(identities):
 
 def add_identity(args):
     identities = load_identities()
-    identities[args.name] = args.email
-    save_identities(identities)
-    print(f"Identity '{args.name}' added.")
+    identity = f"{args.name}: {args.email}"
+    if identity in identities:
+        print(f"Identity '{identity}' already exists.")
+    else:
+        identities[identity] = args.email
+        save_identities(identities)
+        print(f"Identity '{identity}' added.")
 
 
 def remove_identity(args):
     identities = load_identities()
-    if args.name in identities:
-        del identities[args.name]
+    identity = f"{args.name}: {args.email}"
+    if identity in identities:
+        del identities[identity]
         save_identities(identities)
-        print(f"Identity '{args.name}' removed.")
+        print(f"Identity '{identity}' removed.")
     else:
-        print(f"No identity found for '{args.name}'.")
+        print(f"No identity found for '{identity}'.")
 
 
 def edit_identity(args):
     identities = load_identities()
-    identity_completer = WordCompleter([f"{name}: {email}" for name, email in identities.items()])
+    identity_completer = WordCompleter(list(identities.keys()))
     identity = prompt("Choose an identity to edit [You can use tab to autocomplete]: ", completer=identity_completer)
 
-    while identity not in [f"{name}: {email}" for name, email in identities.items()]:
+    while identity not in [name for name, email in identities.keys().split(": ")]:
         print("Invalid identity. Please try again.")
         identity = prompt("Choose an identity to edit: ", completer=identity_completer)
 
@@ -88,16 +93,17 @@ def list_identities(args):
     if not identities:
         print("No identities found.")
     else:
-        for name, email in identities.items():
-            print(f"{name}: {email}")
+        for identity in identities.keys():
+            name, email = identity.split(": ")
+            print(name)
 
 
 def clone_repository(args):
     identities = load_identities()
-    identity_completer = WordCompleter([f"{name}: {email}" for name, email in identities.items()])
+    identity_completer = WordCompleter(list(identities.keys()))
     identity = prompt("Choose an identity: ", completer=identity_completer)
 
-    while identity not in [f"{name}: {email}" for name, email in identities.items()]:
+    while identity not in [name for name, email in identities.keys().split(": ")]:
         print("Invalid identity. Please try again.")
         identity = prompt("Choose an identity: ", completer=identity_completer)
 
@@ -120,10 +126,11 @@ def switch_identity(args):
     repo = Repo('.')
     if not repo.bare:
         identities = load_identities()
-        identity_completer = WordCompleter([f"{name}: {email}" for name, email in identities.items()])
-        identity = prompt("Choose an identity: ", completer=identity_completer)
+        identity_completer = WordCompleter(list(identities.keys()))
+        print("Switching identity in the current project.")
+        identity = prompt("Choose an identity [you can use tab to autocomplete]: ", completer=identity_completer)
 
-        while identity not in [f"{name}: {email}" for name, email in identities.items()]:
+        while identity not in [name.split(": ")[0] for name in identities.keys()]:
             print("Invalid identity. Please try again.")
             identity = prompt("Choose an identity: ", completer=identity_completer)
 
@@ -149,6 +156,7 @@ def main():
     # Remove identity command
     parser_remove = subparsers.add_parser('remove', help='Remove an existing identity')
     parser_remove.add_argument('name', help='Identity name')
+    parser_remove.add_argument('email', help='Email address')
     parser_remove.set_defaults(func=remove_identity)
 
     # List identities command
@@ -160,6 +168,7 @@ def main():
     parser_clone.add_argument('url', help='Repository URL')
     parser_clone.add_argument('directory', nargs='?', default=None, help='Directory to clone the repository into')
     parser_clone.set_defaults(func=clone_repository)
+
     # Switch identity command
     parser_switch = subparsers.add_parser('switch', help='Switch identity in an existing project')
     parser_switch.add_argument('repo_path', help='Path to the Git repository')
