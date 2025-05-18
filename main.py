@@ -100,9 +100,14 @@ def list_identities(args):
 
 def clone_repository(args):
     identities = load_identities()
+    if not identities:
+        print("No identities found. Please add an identity first using 'add' command.")
+        return
+
     identity_completer = WordCompleter(list(identities.keys()))
     print("Cloning repo, but first...")
-    identity = prompt("Choose an identity for commits [you can use tab to autocomplete]: ", completer=identity_completer)
+    identity = prompt("Choose an identity for commits [you can use tab to autocomplete]: ",
+                      completer=identity_completer)
 
     while identity not in identities.keys():
         print("Invalid identity. Please try again.")
@@ -110,19 +115,58 @@ def clone_repository(args):
 
     name, email = identity.split(": ")
     repo_name = args.directory or args.url.split('/')[-1].replace('.git', '')
-    Repo.clone_from(args.url, repo_name)
-    repo = Repo(repo_name)
-    with repo.config_writer() as git_config:
-        git_config.set_value("user", "name", name)
-        git_config.set_value("user", "email", email)
-    print(f"Repository '{repo_name}' cloned with identity '{name}'.")
 
-    if not os.path.exists(repo_name):
-        print(f"Directory '{repo_name}' does not exist. Please check the repository cloning process.")
-        return
+    # Check if the directory exists and is not empty
+    if os.path.exists(repo_name) and os.listdir(repo_name):
+        print(f"Error: Destination path '{repo_name}' already exists and is not empty.")
+        action = input(f"What would you like to do?\n"
+                       f"1. Try with a different directory name\n"
+                       f"2. Remove existing directory and clone again\n"
+                       f"3. Cancel cloning\n"
+                       f"Enter choice (1-3): ")
 
-    os.chdir(repo_name)
+        if action == "1":
+            new_name = input("Enter new directory name: ")
+            try:
+                Repo.clone_from(args.url, new_name)
+                repo_name = new_name
+            except Exception as e:
+                print(f"Error cloning repository: {str(e)}")
+                return
+        elif action == "2":
+            confirm = input(f"Are you sure you want to remove directory '{repo_name}'? This cannot be undone. (y/n): ")
+            if confirm.lower() == 'y':
+                try:
+                    import shutil
+                    shutil.rmtree(repo_name)
+                    Repo.clone_from(args.url, repo_name)
+                except Exception as e:
+                    print(f"Error: {str(e)}")
+                    return
+            else:
+                print("Clone operation cancelled.")
+                return
+        else:
+            print("Clone operation cancelled.")
+            return
+    else:
+        # Directory doesn't exist or is empty, proceed with cloning
+        try:
+            Repo.clone_from(args.url, repo_name)
+        except Exception as e:
+            print(f"Error cloning repository: {str(e)}")
+            return
 
+    try:
+        repo = Repo(repo_name)
+        with repo.config_writer() as git_config:
+            git_config.set_value("user", "name", name)
+            git_config.set_value("user", "email", email)
+        print(f"Repository '{repo_name}' cloned with identity '{name}'.")
+
+        os.chdir(repo_name)
+    except Exception as e:
+        print(f"Error configuring repository: {str(e)}")
 
 def switch_identity(args):
     repo_path = args.repo_path or '.'
